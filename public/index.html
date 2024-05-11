@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performer Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-8">
+
+    <h1 class="text-3xl font-bold mb-6">CyberBullying Detection based on Emotion</h1>
+
+    <!-- Form to Post a New Question -->
+    <form id="postQuestionForm" class="mb-6">
+        <label for="questionInput" class="block font-semibold mb-2">Enter Text to Detect CyberBullying</label>
+        <input type="text" id="questionInput" required
+               class="w-full px-4 py-2 rounded border focus:outline-none focus:border-blue-400">
+        <button type="submit" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Detect</button>
+    </form>
+
+    <!-- Display Current Answer -->
+    <div id="answerContainer" class="border p-4 rounded bg-white">
+        <h2 class="text-lg font-semibold mb-2">Current Input:</h2>
+        <p id="currIp" class="mb-4"></p>
+        <h2 class="text-lg font-semibold mb-2">Result :</h2>
+        <p id="answerText"></p>
+    </div>
+
+    <script>
+        let isQuestionPosted = false; // Flag to track if a question has been posted
+
+        // Function to fetch the current answer
+        async function fetchAnswer() {
+            if (isQuestionPosted) {
+                const response = await fetch('https://cyberbullying-mg99.onrender.com/question');
+                const data = await response.json();
+                console.log(data);
+                if (data.answer) {
+                    document.getElementById('answerText').textContent = data.answer;
+                    isQuestionPosted = false; // Reset the flag once answer is available
+                }
+            }
+        }
+
+        // Function to post a new question
+        async function postQuestion(event) {
+            event.preventDefault();
+
+            const newQuestion = document.getElementById('questionInput').value;
+            document.getElementById('currIp').textContent = newQuestion;
+            const response = await fetch('https://cyberbullying-mg99.onrender.com/question', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ newQuestion })
+            });
+
+            if (response.ok) {
+                alert('Question posted successfully');
+                document.getElementById('questionInput').value = ''; // Clear input field
+                isQuestionPosted = true; // Set the flag to start fetching the answer
+            } else {
+                alert('Failed to post question');
+            }
+        }
+
+        // Fetch the initial answer when the page loads
+        window.onload = function() {
+            fetchAnswer(); // Fetch answer initially
+            setInterval(fetchAnswer, 5000); // Fetch answer every 5 seconds (5000 milliseconds)
+        };
+
+        // Attach submit event listener to question form
+        document.getElementById('postQuestionForm').addEventListener('submit', postQuestion);
+    </script>
+</body>
+</html>
